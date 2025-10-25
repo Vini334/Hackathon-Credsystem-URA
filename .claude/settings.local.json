@@ -4,7 +4,8 @@
       "Bash(export PATH=$PATH:~/go/bin)",
       "Bash(OPENROUTER_API_KEY=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 PORT=8080 ~/go/bin/go run main.go)",
       "Bash(curl:*)",
-      "Bash(API_URL=http://localhost:8080 ~/go/bin/go run test/test_csv.go assets/intents_pre_loaded.csv)"
+      "Bash(API_URL=http://localhost:8080 ~/go/bin/go run test/test_csv.go assets/intents_pre_loaded.csv)",
+      "Bash(OPENROUTER_API_KEY=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 PORT=8080 ~/go/bin/go run main.go)"
     ],
     "deny": [],
     "ask": []

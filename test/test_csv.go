@@ -59,6 +59,7 @@ func main() {
 	defer file.Close()
 
 	reader := csv.NewReader(file)
+	reader.Comma = ';' // CSV usa ponto e vírgula
 	records, err := reader.ReadAll()
 	if err != nil {
 		fmt.Printf("❌ Erro ao ler CSV: %v\n", err)
@@ -86,9 +87,9 @@ func main() {
 			continue
 		}
 
-		intent := record[0]
-		expectedID, _ := strconv.Atoi(record[1])
-		expectedName := record[2]
+		expectedID, _ := strconv.Atoi(record[0])
+		expectedName := record[1]
+		intent := record[2]
 
 		// Fazer request
 		start := time.Now()

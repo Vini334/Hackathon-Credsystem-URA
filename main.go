@@ -98,39 +98,103 @@ func resolveWithLLM(ctx context.Context, intent string) (FindServiceData, bool, 
 	}
 
 	// Prompt otimizado: 100% acurácia + velocidade
-	prompt := fmt.Sprintf(`Classifique intenção de cliente brasileiro sobre CARTÃO DE CRÉDITO/BANCO. Aceite gírias e erros.
+	prompt := fmt.Sprintf(`Classifique intenção de cliente brasileiro sobre CARTÃO DE CRÉDITO/BANCO. Aceite gírias, erros e variações.
 
-IMPORTANTE: Se a intenção NÃO for sobre cartão/banco/fatura/limite/saldo, retorne {"id":0,"name":""}.
+IMPORTANTE: Se NÃO for sobre cartão/banco/fatura, retorne {"id":0,"name":""}.
 
-Serviços bancários:
+Serviços:
 %s
-REGRAS CRÍTICAS:
-• "disponível usar/gastar/comprar" no contexto de CARTÃO→1 (Limite)
-• "saldo disponível/conta"→12 (Saldo)
-• "vencimento/quando fecha/vence"→1, NÃO 3
-• "pagar negociação/acordo"→2 (obter boleto)
-• "meu boleto" sem contexto→3 (Fatura)
-• "fatura para pagamento"→3 (obter fatura), NÃO 13
-• "quero/vou pagar fatura"→13 (Pagamento)
-• "segunda via fatura"→3
-• "problema cartão"→5, NÃO 14
-• "cartão para uso"→9
-• "perda/extravio/roubo cartão"→11
-• "cancelar seguro"→8
-• "extrato/saldo"→12
-• "registrar problema"→14
-• "código/token fazer cartão"→16
+REGRAS OBRIGATÓRIAS (priorize estas regras):
 
-Exemplos VÁLIDOS:
-"quando fecha fatura"→1 | "pagar negociação"→2 | "quero meu boleto"→3 | "fatura para pagamento"→3
-"cartão não chegou"→4 | "problema cartão"→5 | "cancelar assistência"→8 | "cartão para uso"→9
-"extravio cartão"→11 | "saldo disponível"→12 | "quero pagar fatura"→13 | "queixa"→14 | "token"→16
+1. LIMITE/VENCIMENTO (ID 1):
+   • "disponível usar/gastar/comprar/tem/valor"→1
+   • "quando fecha/vence/vencimento fatura"→1
+   • "melhor dia compra"→1
 
-Exemplos INVÁLIDOS (retorne id:0):
-"pizza"→0 | "cinema"→0 | "tempo"→0 | "consulta médica"→0 | "notebook"→0
+2. BOLETO ACORDO (ID 2):
+   • "pagar negociação/acordo"→2 (obter boleto)
+   • "segunda via acordo"→2
+
+3. FATURA (ID 3):
+   • "segunda via fatura"→3
+   • "fatura para pagamento/cartão"→3 (obter)
+   • "meu boleto" (sem especificar)→3
+   • "código barras fatura"→3
+
+4. ENTREGA CARTÃO (ID 4):
+   • "onde está/não chegou/enviado cartão"→4
+
+5. STATUS CARTÃO (ID 5):
+   • "não funciona/recusado/não passa"→5
+   • "problema cartão"→5
+
+6. AUMENTO LIMITE (ID 6):
+   • "quero mais limite/aumentar/maior"→6
+
+7. CANCELAMENTO CARTÃO (ID 7):
+   • "cancelar/encerrar cartão"→7
+   • "cancelamento crédito"→7
+   • "desistir cartão"→7
+   • "bloquear definitivamente"→7
+
+8. SEGURO (ID 8):
+   • "cancelar seguro/assistência"→8
+   • "telefone/contato seguro/seguradora"→8
+   • "falar/preciso falar com seguro"→8
+   • "seguro do cartão"→8
+
+9. DESBLOQUEIO (ID 9):
+   • "desbloquear/ativar cartão"→9
+   • "cartão para uso imediato"→9
+
+10. SENHA (ID 10):
+    • "esqueci/trocar/recuperar senha"→10
+    • "senha bloqueada"→10
+    • "não tenho mais senha"→10
+    • "preciso nova senha"→10
+
+11. PERDA/ROUBO (ID 11):
+    • "perdi/roubaram/furtado cartão"→11
+    • "extravio/perda"→11
+    • "bloquear por roubo"→11
+
+12. SALDO (ID 12):
+    • "saldo conta/disponível"→12
+    • "consultar saldo/extrato"→12
+    • "quanto tenho na conta"→12
+
+13. PAGAMENTO (ID 13):
+    • "quero pagar conta/boleto"→13 (efetuar)
+    • "pagar boleto" (sem especificar)→13
+    • "pagamento conta"→13
+    • "efetuar pagamento"→13
+    • "quero/vou pagar fatura"→13
+
+14. RECLAMAÇÕES (ID 14):
+    • "quero reclamar"→14
+    • "fazer queixa"→14
+    • "abrir/registrar reclamação"→14
+    • "protocolo reclamação"→14
+
+15. ATENDIMENTO HUMANO (ID 15):
+    • "falar pessoa/humano/atendente"→15
+    • "preciso humano"→15
+    • "transferir atendente"→15
+    • "atendimento pessoal"→15
+
+16. TOKEN (ID 16):
+    • "token/código proposta/fazer cartão"→16
+    • "receber código cartão"→16
+    • "número token"→16
+
+DIFERENÇAS CRÍTICAS:
+• "pagar acordo"→2 (obter) vs "pagar fatura"→13 (efetuar)
+• "fatura pagamento"→3 (obter) vs "quero pagar"→13 (ação)
+• "problema cartão"→5 vs "quero reclamar"→14
+• "cancelar seguro"→8 vs "cancelar cartão"→7
 
 Frase: "%s"
-JSON: {"id":N,"name":"nome"}`, list, intent)
+JSON: {"id":N,"name":"nome exato da lista"}`, list, intent)
 
 	reqBody := map[string]any{
 		//		"model": "mistralai/mistral-7b-instruct",

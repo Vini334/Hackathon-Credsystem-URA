@@ -388,15 +388,6 @@ Porém, o custo-benefício é baixo:
 
 ---
 
-## 🔑 API Key Usada
-
-```
-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
-```
-
-**Créditos restantes**: $2.90 de $3.00 (96.6%)
-
----
 
 ## 👥 EQUIPE
 
