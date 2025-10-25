@@ -132,13 +132,14 @@ REGRAS OBRIGATÓRIAS (priorize estas regras):
    • "quero mais limite/aumentar/maior"→6
 
 7. CANCELAMENTO CARTÃO (ID 7):
-   • "cancelar/encerrar cartão"→7
+   • "cancelar/encerrar/desistir cartão"→7
    • "cancelamento crédito"→7
-   • "desistir cartão"→7
+   • "bloquear cartão" (SEM mencionar perda/roubo)→7
+   • "bloquear por suspeita/golpe/fraude" (sem perda física)→7
    • "bloquear definitivamente"→7
 
 8. SEGURO (ID 8):
-   • "cancelar seguro/assistência"→8
+   • "cancelar/quero cancelar seguro/assistência"→8
    • "telefone/contato seguro/seguradora"→8
    • "falar/preciso falar com seguro"→8
    • "seguro do cartão"→8
@@ -155,13 +156,14 @@ REGRAS OBRIGATÓRIAS (priorize estas regras):
 
 11. PERDA/ROUBO (ID 11):
     • "perdi/roubaram/furtado cartão"→11
-    • "extravio/perda"→11
-    • "bloquear por roubo"→11
+    • "extravio/perda do cartão"→11
+    • "bloquear por roubo/perda" (menciona perda REAL)→11
 
 12. SALDO (ID 12):
-    • "saldo conta/disponível"→12
-    • "consultar saldo/extrato"→12
-    • "quanto tenho na conta"→12
+    • "saldo conta corrente/disponível"→12
+    • "consultar saldo"→12
+    • "extrato da conta"→12
+    • "quanto tenho na conta/meu saldo"→12
 
 13. PAGAMENTO (ID 13):
     • "quero pagar conta/boleto"→13 (efetuar)
@@ -174,6 +176,7 @@ REGRAS OBRIGATÓRIAS (priorize estas regras):
     • "quero reclamar"→14
     • "fazer queixa"→14
     • "abrir/registrar reclamação"→14
+    • "registrar problema"→14
     • "protocolo reclamação"→14
 
 15. ATENDIMENTO HUMANO (ID 15):
@@ -188,10 +191,11 @@ REGRAS OBRIGATÓRIAS (priorize estas regras):
     • "número token"→16
 
 DIFERENÇAS CRÍTICAS:
-• "pagar acordo"→2 (obter) vs "pagar fatura"→13 (efetuar)
-• "fatura pagamento"→3 (obter) vs "quero pagar"→13 (ação)
-• "problema cartão"→5 vs "quero reclamar"→14
-• "cancelar seguro"→8 vs "cancelar cartão"→7
+• "bloquear" sem roubo/perda→7 | "bloquear por roubo/perda"→11
+• "perdi/roubaram" (explícito)→11 | "suspeita" (sem perda)→7
+• "cartão não funciona"→5 | "bloquear cartão"→7
+• "pagar acordo"→2 | "pagar fatura/boleto"→13
+• "obter fatura"→3 | "efetuar pagamento"→13
 
 Frase: "%s"
 JSON: {"id":N,"name":"nome exato da lista"}`, list, intent)
