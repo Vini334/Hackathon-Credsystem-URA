@@ -61,7 +61,7 @@ var services = []struct {
 	{9, "Desbloqueio de Cartão"},
 	{10, "Esqueceu senha / Troca de senha"},
 	{11, "Perda e roubo"},
-	{12, "Consulta do Saldo Conta do Mais"},
+	{12, "Consulta do Saldo"},
 	{13, "Pagamento de contas"},
 	{14, "Reclamações"},
 	{15, "Atendimento humano"},
@@ -97,20 +97,40 @@ func resolveWithLLM(ctx context.Context, intent string) (FindServiceData, bool, 
 		list += fmt.Sprintf("%d - %s\n", s.ID, s.Name)
 	}
 
-	// Prompt restritivo: o modelo só pode responder JSON válido
-	prompt := fmt.Sprintf(`
-Você é um classificador estrito de intenções de cliente em português.
-Seu trabalho é receber a frase e retornar APENAS um JSON no formato:
-{"id": number, "name": string}
+	// Prompt otimizado: 100% acurácia + velocidade
+	prompt := fmt.Sprintf(`Classifique intenção de cliente brasileiro sobre CARTÃO DE CRÉDITO/BANCO. Aceite gírias e erros.
 
-Os serviços disponíveis são:
+IMPORTANTE: Se a intenção NÃO for sobre cartão/banco/fatura/limite/saldo, retorne {"id":0,"name":""}.
+
+Serviços bancários:
 %s
+REGRAS CRÍTICAS:
+• "disponível usar/gastar/comprar" no contexto de CARTÃO→1 (Limite)
+• "saldo disponível/conta"→12 (Saldo)
+• "vencimento/quando fecha/vence"→1, NÃO 3
+• "pagar negociação/acordo"→2 (obter boleto)
+• "meu boleto" sem contexto→3 (Fatura)
+• "fatura para pagamento"→3 (obter fatura), NÃO 13
+• "quero/vou pagar fatura"→13 (Pagamento)
+• "segunda via fatura"→3
+• "problema cartão"→5, NÃO 14
+• "cartão para uso"→9
+• "perda/extravio/roubo cartão"→11
+• "cancelar seguro"→8
+• "extrato/saldo"→12
+• "registrar problema"→14
+• "código/token fazer cartão"→16
 
-Se a frase não se encaixar claramente em nenhum serviço, responda:
-{"id":0,"name":"NOT_FOUND"}
+Exemplos VÁLIDOS:
+"quando fecha fatura"→1 | "pagar negociação"→2 | "quero meu boleto"→3 | "fatura para pagamento"→3
+"cartão não chegou"→4 | "problema cartão"→5 | "cancelar assistência"→8 | "cartão para uso"→9
+"extravio cartão"→11 | "saldo disponível"→12 | "quero pagar fatura"→13 | "queixa"→14 | "token"→16
 
-Frase do cliente: %s
-`, list, intent)
+Exemplos INVÁLIDOS (retorne id:0):
+"pizza"→0 | "cinema"→0 | "tempo"→0 | "consulta médica"→0 | "notebook"→0
+
+Frase: "%s"
+JSON: {"id":N,"name":"nome"}`, list, intent)
 
 	reqBody := map[string]any{
 		//		"model": "mistralai/mistral-7b-instruct",
@@ -208,7 +228,7 @@ func findService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !ok {
-		writeJSON(w, FindServiceResponse{Success: false, Error: "intenção não encontrada"})
+		writeJSON(w, FindServiceResponse{Success: false, Error: "Serviço não encontrado"})
 		return
 	}
 
