@@ -15,9 +15,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-/* ================================
-   Tipos básicos
-================================ */
 
 type FindServiceRequest struct {
 	Intent string `json:"intent"`
@@ -42,10 +39,6 @@ type openRouterResp struct {
 	} `json:"choices"`
 }
 
-/* ================================
-   Catálogo de serviços
-================================ */
-
 var services = []struct {
 	ID   int
 	Name string
@@ -68,9 +61,6 @@ var services = []struct {
 	{16, "Token de proposta"},
 }
 
-/* ================================
-   Utilitário: busca por ID
-================================ */
 
 func getServiceByID(id int) (string, bool) {
 	for _, s := range services {
@@ -81,9 +71,6 @@ func getServiceByID(id int) (string, bool) {
 	return "", false
 }
 
-/* ================================
-   IA via OpenRouter (Mistral-7B)
-================================ */
 
 func resolveWithLLM(ctx context.Context, intent string) (FindServiceData, bool, error) {
 	apiKey := os.Getenv("OPENROUTER_API_KEY")
@@ -91,13 +78,11 @@ func resolveWithLLM(ctx context.Context, intent string) (FindServiceData, bool, 
 		return FindServiceData{}, false, errors.New("OPENROUTER_API_KEY não configurada")
 	}
 
-	// Monta lista de serviços como referência para o modelo
 	list := ""
 	for _, s := range services {
 		list += fmt.Sprintf("%d - %s\n", s.ID, s.Name)
 	}
 
-	// Prompt otimizado: 100% acurácia + velocidade
 	prompt := fmt.Sprintf(`Classifique intenção de cliente brasileiro sobre CARTÃO DE CRÉDITO/BANCO. Aceite gírias, erros e variações.
 
 IMPORTANTE: Se NÃO for sobre cartão/banco/fatura, retorne {"id":0,"name":""}.
@@ -201,8 +186,7 @@ Frase: "%s"
 JSON: {"id":N,"name":"nome exato da lista"}`, list, intent)
 
 	reqBody := map[string]any{
-		//		"model": "mistralai/mistral-7b-instruct",
-		"model": "gpt-4o-mini",
+		"model": "openai/gpt-4o-mini",
 		"messages": []map[string]string{
 			{"role": "system", "content": "Você é um classificador de intenções de cliente."},
 			{"role": "user", "content": prompt},
@@ -263,10 +247,6 @@ JSON: {"id":N,"name":"nome exato da lista"}`, list, intent)
 	return FindServiceData{ServiceID: out.ID, ServiceName: name}, true, nil
 }
 
-/* ================================
-   Handlers HTTP
-================================ */
-
 func healthz(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"status":"ok"}`))
@@ -307,10 +287,6 @@ func writeJSON(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(v)
 }
-
-/* ================================
-   Main
-================================ */
 
 func main() {
 	r := chi.NewRouter()
